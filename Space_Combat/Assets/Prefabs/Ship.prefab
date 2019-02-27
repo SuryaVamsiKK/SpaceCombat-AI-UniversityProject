@@ -1129,7 +1129,7 @@ MonoBehaviour:
   target: {fileID: 0}
   range: 0
   debugColor: {r: 1, g: 0, b: 0, a: 1}
-  maxThrust: 5
+  maxThrust: 4
   maxRetroThrust: 10
   enableValues: 0
   thrust: 0

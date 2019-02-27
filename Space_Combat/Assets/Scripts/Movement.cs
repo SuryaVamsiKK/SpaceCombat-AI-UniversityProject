@@ -42,20 +42,18 @@ public class Movement : MonoBehaviour
         if (type == EType.Player)
         {
             thrusterBasedMovement(Input.GetAxis("Thrust") / 10);
-            retorThrusterBasedMovement(Input.GetAxis("Yaw") / 10, - Input.GetAxis("Pitch") / 10, -Input.GetAxis("Roll") / 10);
+            retorThrusterBasedMovement(Input.GetAxis("Yaw") / 10, -Input.GetAxis("Pitch") / 10, -Input.GetAxis("Roll") / 10);
         }
         else
         {
-            if ((transform.position - target.position).sqrMagnitude > range * range)
-            {
-                thrusterBasedMovement(AI_Thrust());
-            }
+
+            thrusterBasedMovement(AI_Thrust());
             AI_RetroThrust();
         }
 
         if (type == EType.Player)
         {
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetKey(KeyCode.X))
             {
                 KillEngines();
             }
@@ -69,7 +67,9 @@ public class Movement : MonoBehaviour
     }
 
     public void thrusterBasedMovement(float inputThrust)
-    {       
+    {
+        #region clamping rawThrust with max thrust
+
         thrust += inputThrust;
 
         if (thrust > maxThrust)
@@ -81,8 +81,10 @@ public class Movement : MonoBehaviour
             thrust = -maxThrust;
         }
 
-        if(thrust >= 0)
-        { 
+        #endregion
+
+        if (thrust >= 0)
+        {
             thrustObject.GetComponent<MeshRenderer>().material.color = flameColorForward;
         }
         else
@@ -98,7 +100,32 @@ public class Movement : MonoBehaviour
 
     public float AI_Thrust()
     {
-        return maxThrust;
+        if ((transform.position - target.position).sqrMagnitude > range * range)
+        {
+            if(thrust < maxThrust)
+            {
+                return updateValue;
+            }
+            else
+            {
+                return maxThrust;
+            }
+        }
+        else
+        {
+            if (thrust > 0)
+            {
+                return -updateValue;
+            }
+            else if(thrust < 0)
+            {
+                return updateValue;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 
     public void AI_RetroThrust()
@@ -115,7 +142,19 @@ public class Movement : MonoBehaviour
 
     public void KillEngines()
     {
-        thrust = 0;
+        if (thrust > 0)
+        {
+            thrust -= updateValue;
+        }
+        else if (thrust < 0)
+        {
+            thrust += updateValue;
+        }
+        else
+        {
+            thrust = 0;
+        }
+
     }
 
     public void RetroThrustresKill()
