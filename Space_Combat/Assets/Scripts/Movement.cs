@@ -4,44 +4,72 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    public bool player = true;
+    public EType type;
+    [ConditionalHideEnum("type", 1)] public Transform target;
+    [ConditionalHideEnum("type", 1)] public float range;
+    [ConditionalHideEnum("type", 1)] public Color debugColor = Color.red;
+    [Header("Thrust Values")]
+    public float maxThrust = 3f;
+    public float maxRetroThrust = 3f;
 
-    [ConditionalHide("player", 1)] public float maxThrust = 3f;
-    [ConditionalHide("player", 1)] public float maxRetroThrust = 3f;
+    [Space]
+
+    public bool enableValues = false;
+    [ConditionalHide("enableValues")] public float thrust = 1;
+    [ConditionalHide("enableValues")] public float retroThrustYaw = 1;
+    [ConditionalHide("enableValues")] public float retroThrustPitch = 1;
+    [ConditionalHide("enableValues")] public float retroThrustRoll = 1;
+    [ConditionalHide("enableValues")] public float updateValue = 0.1f;
+
     [Space]
     public Transform thrustObject;
-
-    [Range(-3, 3)] public float thrust = 1;
-    [Range(-3, 3)] public float retroThrustYaw = 1;
-    [Range(-3, 3)] public float retroThrustPitch = 1;
-    [Range(-3, 3)] public float retroThrustRoll = 1;
-    [Range (0, 1)] public float updateValue = 0.1f;
+    [Space]
 
     [Header ("Color Settings")]
     public Color flameColorForward;
     public Color flameColorBackward;
 
+    private void Start()
+    {
+        if (type == EType.Player)
+        {
+            CusrosHide();
+        }
+    }
+
     private void Update()
     {
-        if (player)
+        if (type == EType.Player)
         {
             thrusterBasedMovement(Input.GetAxis("Thrust") / 10);
-            retorThrusterBasedMovement(Input.GetAxis("Yaw") / 10, Input.GetAxis("Pitch") / 10, Input.GetAxis("Roll") / 10);
+            retorThrusterBasedMovement(Input.GetAxis("Yaw") / 10, - Input.GetAxis("Pitch") / 10, -Input.GetAxis("Roll") / 10);
         }
         else
         {
-            thrusterBasedMovement(AI_Thrust());
+            if ((transform.position - target.position).sqrMagnitude > range * range)
+            {
+                thrusterBasedMovement(AI_Thrust());
+            }
+            AI_RetroThrust();
+        }
+
+        if (type == EType.Player)
+        {
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                KillEngines();
+            }
+
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                RetroThrustresKill();
+                //ResetPitchYawRoll();
+            }
         }
     }
 
     public void thrusterBasedMovement(float inputThrust)
-    {
-        if(!player)
-        {
-            maxThrust = 3f;
-            thrust = 1f;
-        }
-        
+    {       
         thrust += inputThrust;
 
         if (thrust > maxThrust)
@@ -54,28 +82,56 @@ public class Movement : MonoBehaviour
         }
 
         if(thrust >= 0)
-        {
-            thrustObject.GetComponent<MeshRenderer>().sharedMaterial.color = flameColorForward;
+        { 
+            thrustObject.GetComponent<MeshRenderer>().material.color = flameColorForward;
         }
         else
         {
-            thrustObject.GetComponent<MeshRenderer>().sharedMaterial.color = flameColorBackward;
+            thrustObject.GetComponent<MeshRenderer>().material.color = flameColorBackward;
         }
 
         thrustObject.localScale = new Vector3(Mathf.Abs((1.75f * thrust) / maxThrust), thrustObject.localScale.y, Mathf.Abs((1.75f * thrust) / maxThrust));
         transform.position += transform.forward * thrust * updateValue;
     }
 
+    #region For AI
+
+    public float AI_Thrust()
+    {
+        return maxThrust;
+    }
+
+    public void AI_RetroThrust()
+    {
+        Vector3 pos = target.position - transform.position;
+        Quaternion rotation = Quaternion.LookRotation(pos);
+
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, updateValue * maxRetroThrust);
+    }
+
+    #endregion
+
+    #region For Player
+
+    public void KillEngines()
+    {
+        thrust = 0;
+    }
+
+    public void RetroThrustresKill()
+    {
+        retroThrustYaw = 0;
+        retroThrustRoll = 0;
+        retroThrustPitch = 0;
+    }
+
+    public void ResetPitchYawRoll()
+    {
+        transform.rotation = Quaternion.identity;
+    }
+
     public void retorThrusterBasedMovement(float inputRetroThrustYaw, float inputRetroThrustPitch, float inputRetroThrustRoll)
     {
-        if (!player)
-        {
-            maxRetroThrust = 3f;
-            retroThrustYaw = 1f;
-            retroThrustPitch = 1f;
-            retroThrustRoll = 1f;
-        }
-
         retroThrustYaw += inputRetroThrustYaw;
         retroThrustPitch += inputRetroThrustPitch;
         retroThrustRoll += inputRetroThrustRoll;
@@ -120,8 +176,26 @@ public class Movement : MonoBehaviour
         transform.Rotate(pitch, yaw, roll);
     }
 
-    public float AI_Thrust()
+    public void CusrosHide()
     {
-        return 1f;
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
+
+    #endregion
+
+    private void OnDrawGizmos()
+    {
+        if(type == EType.Enemy)
+        {
+            Gizmos.color = debugColor;
+            Gizmos.DrawWireSphere(this.transform.position, range);
+        }
+    }
+
+}
+
+public enum EType
+{
+    Player, Enemy
 }
