@@ -650,23 +650,24 @@ MonoBehaviour:
   target: {fileID: 0}
   range: 25
   rangeDetection: 75
-  objectDetectionRadius: 3
+  pathFindingType: 1
   objectDetectionThreshold: 10
-  objectDetectionRange: 10
+  objectDetectionRadius: 2.5
+  objectDetectionRange: 8
   accuracy: 8
   dectorsOffset: {x: 0, y: 0, z: 0}
   layerMask:
     serializedVersion: 2
     m_Bits: 307
   dectors:
-  - {x: 0, y: 3, z: 11}
-  - {x: 2.1213202, y: 2.1213202, z: 11}
-  - {x: 3, y: -0.00000013113416, z: 11}
-  - {x: 2.1213202, y: -2.1213202, z: 11}
-  - {x: -0.00000026226832, y: -3, z: 11}
-  - {x: -2.1213202, y: -2.1213205, z: 11}
-  - {x: -3, y: 0.00000003577464, z: 11}
-  - {x: -2.1213207, y: 2.12132, z: 11}
+  - {x: 0, y: 2.5, z: 0}
+  - {x: 1.767767, y: 1.767767, z: 0}
+  - {x: 2.5, y: -0.000000109278474, z: 0}
+  - {x: 1.767767, y: -1.767767, z: 0}
+  - {x: -0.00000021855695, y: -2.5, z: 0}
+  - {x: -1.7677667, y: -1.7677671, z: 0}
+  - {x: -2.5, y: 0.000000029812202, z: 0}
+  - {x: -1.7677672, y: 1.7677666, z: 0}
   maxThrust: 2.5
   maxRetroThrust: 5
   enableValues: 0

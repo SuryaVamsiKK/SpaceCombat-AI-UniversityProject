@@ -11,11 +11,12 @@ public class Movement : MonoBehaviour
     [ConditionalHideEnum("type", 1)] public float range;
     [ConditionalHideEnum("type", 1)] public float rangeDetection;
     [Header("Path Finding")]
+    [ConditionalHideEnum("type", 1)] public EpathFindingType pathFindingType = EpathFindingType.Cylindrical;
+    [ConditionalHideEnum("pathFindingType", 0)] public float objectDetectionThreshold;
     [ConditionalHideEnum("type", 1)] public float objectDetectionRadius;
-    [ConditionalHideEnum("type", 1)] public float objectDetectionThreshold;
     [ConditionalHideEnum("type", 1)] public float objectDetectionRange;
     [ConditionalHideEnum("type", 1)] public int accuracy;
-    [ConditionalHideEnum("type", 1)] public Vector3 dectorsOffset;
+    [ConditionalHideEnum("pathFindingType", 0)] public Vector3 dectorsOffset;
     [ConditionalHideEnum("type", 1)] public LayerMask layerMask;
     [HideInInspector] public Vector3[] dectors;
 
@@ -80,7 +81,7 @@ public class Movement : MonoBehaviour
         if (type == EType.Player)
         {
             thrusterBasedMovement(Input.GetAxis("Thrust") / 10);
-            retorThrusterBasedMovement(Input.GetAxis("Yaw") / 10, Input.GetAxis("Pitch") / 10, -Input.GetAxis("Roll") / 10);
+            retroThrusterBasedMovement(Input.GetAxis("Yaw") / 10, Input.GetAxis("Pitch") / 10, -Input.GetAxis("Roll") / 10, 1f);
         }
         else
         {
@@ -178,9 +179,9 @@ public class Movement : MonoBehaviour
             dectors[i] = new Vector3();
             dectors[i].x = objectDetectionRadius * Mathf.Sin(angle * Mathf.Deg2Rad);
             dectors[i].y = objectDetectionRadius * Mathf.Cos(angle * Mathf.Deg2Rad);
-            dectors[i].z = objectDetectionThreshold;
+            dectors[i].z = pathFindingType == EpathFindingType.Conical ? objectDetectionThreshold : 0;
 
-            dectors[i] = transform.forward + transform.TransformPoint(dectors[i]);
+            dectors[i] = transform.TransformPoint(dectors[i]);
 
             #region Debugging the dectors it self when needed uncomment
             //Vector3 dir = detectionAccuracy[i] - transform.position;
@@ -193,25 +194,29 @@ public class Movement : MonoBehaviour
 
     void PathFinding()
     {
-        RaycastHit[] hit;
+        RaycastHit[][] hit;
 
         Vector3 mean = Vector3.zero;
+        List<Vector3> points = new List<Vector3>();
+        bool obstruction = false;
 
         if(type == EType.AI)
         {
             Vector3 origin = dectorsOffset;
             origin = transform.forward + transform.TransformPoint(origin);
 
+            hit = new RaycastHit[dectors.Length][];
+
             for (int i = 0; i < dectors.Length; i++)
             {
                 Vector3 dir = dectors[i] - transform.position;
-                Ray ray = new Ray(origin, dir);
+                Ray ray = pathFindingType == EpathFindingType.Conical ? new Ray(origin, dir) : new Ray(dectors[i], transform.forward);
 
-                hit = Physics.RaycastAll(ray, objectDetectionRange, layerMask);
+                hit[i] = Physics.RaycastAll(ray, objectDetectionRange, layerMask);
 
-                for (int j = 0; j < hit.Length; j++)
+                for (int j = 0; j < hit[i].Length; j++)
                 {
-                    if (hit[j].transform.root.gameObject != this.gameObject)
+                    if (hit[i][j].transform.root.gameObject != this.gameObject)
                     {
                         int opposite = i + dectors.Length / 2;
 
@@ -220,21 +225,44 @@ public class Movement : MonoBehaviour
                             opposite -= dectors.Length;
                         }
 
-
-                        mean = dectors[opposite];
-                        transform.Rotate(mean * updateValue * 2);
+                        if (mean == Vector3.zero)
+                        {
+                            mean = dectors[opposite];
+                        }
+                        else
+                        {
+                            mean = (mean + dectors[opposite]) / 2;
+                        }
                     }
                 }
-
-                if (hit.Length == 0)
-                {
-                    AI_RetroThrust();
-                }
-
             }
 
-           
-
+            for (int a = 0; a < hit.Length; a++)
+            {
+                if (hit[a].Length != 0)
+                {
+                    obstruction = true;
+                    break;
+                }
+                if (a == hit.Length - 1)
+                {
+                    obstruction = false;
+                }
+            }
+            
+            if(!obstruction)
+            {
+                AI_RetroThrust();
+                retroThrustPitch = 0;
+                retroThrustRoll = 0;
+                retroThrustYaw = 0;
+            }
+            else
+            {
+                //retro = transform.forward + transform.TransformPoint(retro);
+                Debug.Log(mean);
+                retroThrusterBasedMovement(mean.x / 10, -mean.y / 10, mean.z / 10, 1);
+            }
         }
     }
 
@@ -299,7 +327,7 @@ public class Movement : MonoBehaviour
         transform.rotation = Quaternion.identity;
     }
 
-    public void retorThrusterBasedMovement(float inputRetroThrustYaw, float inputRetroThrustPitch, float inputRetroThrustRoll)
+    public void retroThrusterBasedMovement(float inputRetroThrustYaw, float inputRetroThrustPitch, float inputRetroThrustRoll, float implementation)
     {
         retroThrustYaw += inputRetroThrustYaw;
         retroThrustPitch += inputRetroThrustPitch;
@@ -338,9 +366,9 @@ public class Movement : MonoBehaviour
         }
         #endregion
 
-        float yaw = retroThrustYaw * updateValue;
-        float pitch = retroThrustPitch * updateValue;
-        float roll = retroThrustRoll * updateValue;
+        float yaw = retroThrustYaw * updateValue * implementation;
+        float pitch = retroThrustPitch * updateValue * implementation;
+        float roll = retroThrustRoll * updateValue * implementation;
 
         transform.Rotate(pitch, yaw, roll);
     }
@@ -366,4 +394,9 @@ public class Movement : MonoBehaviour
 public enum EType
 {
     Player, AI
+}
+
+public enum EpathFindingType
+{
+    Conical, Cylindrical
 }

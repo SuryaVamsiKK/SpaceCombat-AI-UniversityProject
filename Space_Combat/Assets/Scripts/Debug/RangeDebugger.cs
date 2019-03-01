@@ -26,7 +26,7 @@ public class RangeDebugger : MonoBehaviour
             for (int i = 0; i < hook.dectors.Length; i++)
             {
                 Vector3 dir = hook.dectors[i] - transform.position;
-                Ray ray = new Ray(origin, dir);
+                Ray ray = hook.pathFindingType == EpathFindingType.Conical ? new Ray(origin, dir) : new Ray(hook.dectors[i], transform.forward);
                 Gizmos.DrawRay(ray.origin, ray.direction * hook.objectDetectionRange);
                 Gizmos.DrawSphere(ray.GetPoint(hook.objectDetectionRange), 0.15f);
             }
