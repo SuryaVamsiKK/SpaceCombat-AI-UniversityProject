@@ -611,6 +611,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6952401740816093551}
   - component: {fileID: 6952401740816093550}
+  - component: {fileID: 4290892217676616955}
   m_Layer: 0
   m_Name: Enemy Ship
   m_TagString: Untagged
@@ -647,10 +648,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 1
   target: {fileID: 0}
-  range: 20
-  debugColor: {r: 1, g: 0, b: 0, a: 0.1882353}
+  range: 25
+  rangeDetection: 75
+  objectDetectionRadius: 3
+  objectDetectionThreshold: 10
+  objectDetectionRange: 10
+  accuracy: 8
+  dectorsOffset: {x: 0, y: 0, z: 0}
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 307
+  dectors:
+  - {x: 0, y: 3, z: 11}
+  - {x: 2.1213202, y: 2.1213202, z: 11}
+  - {x: 3, y: -0.00000013113416, z: 11}
+  - {x: 2.1213202, y: -2.1213202, z: 11}
+  - {x: -0.00000026226832, y: -3, z: 11}
+  - {x: -2.1213202, y: -2.1213205, z: 11}
+  - {x: -3, y: 0.00000003577464, z: 11}
+  - {x: -2.1213207, y: 2.12132, z: 11}
   maxThrust: 2.5
-  maxRetroThrust: 10
+  maxRetroThrust: 5
   enableValues: 0
   thrust: 0
   retroThrustYaw: 0
@@ -660,6 +678,21 @@ MonoBehaviour:
   thrustObject: {fileID: 6952401740752931588}
   flameColorForward: {r: 1, g: 0.46634614, b: 0, a: 1}
   flameColorBackward: {r: 0, g: 0.82933664, b: 1, a: 1}
+--- !u!114 &4290892217676616955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6952401740816093545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fe1756a6177a6e449d72f46d4b8d222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugColor: {r: 1, g: 0, b: 0.1361413, a: 0.44705883}
+  debugColorDetection: {r: 1, g: 0.7325124, b: 0, a: 0.39215687}
+  debugDetectionColor: {r: 0.07244551, g: 1, b: 0, a: 0.5019608}
 --- !u!1 &6952401740833921829
 GameObject:
   m_ObjectHideFlags: 0
