@@ -259,9 +259,8 @@ public class Movement : MonoBehaviour
             }
             else
             {
-                //retro = transform.forward + transform.TransformPoint(retro);
-                Debug.Log(mean);
-                retroThrusterBasedMovement(mean.x / 10, -mean.y / 10, mean.z / 10, 1);
+                mean = clamp(mean);
+                retroThrusterBasedMovement(mean.x / 10, -mean.y / 10, mean.z / 10, 2);
             }
         }
     }
@@ -388,6 +387,29 @@ public class Movement : MonoBehaviour
             detectorsSetup();
             //PathFinding();
         }
+    }
+
+    public Vector3 clamp(Vector3 value)
+    {
+        value.x = clampSingle(value.x);
+        value.y = clampSingle(value.y);
+        value.z = clampSingle(value.z);
+
+        return value;
+    }
+
+    public float clampSingle(float value)
+    {
+        if (value > 1)
+        {
+            value = 1;
+        }
+        if (value < -1)
+        {
+            value = -1;
+        }
+
+        return value;
     }
 }
 
