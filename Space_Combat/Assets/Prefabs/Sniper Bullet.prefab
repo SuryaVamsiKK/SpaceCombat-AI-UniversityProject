@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6819601304310237778}
   - component: {fileID: 6819601304310237781}
   m_Layer: 0
-  m_Name: Sphere
+  m_Name: Sniper Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -105,9 +105,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36400f2278dc12b439fa1c2d1df0c28e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speed: 100
-  Damage: 10
-  maxTime: 2
+  Speed: 110
+  Damage: 90
+  maxTime: 8
 --- !u!54 &6819601304310237781
 Rigidbody:
   m_ObjectHideFlags: 0

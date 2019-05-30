@@ -6,6 +6,7 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     public EType type;
+    [ConditionalHideEnum("type", 1)] public bool healer;
     [Header("Targeting")]
     [ConditionalHideEnum("type", 1)] public Transform target;
     [ConditionalHideEnum("type", 1)] public float range;
@@ -32,6 +33,9 @@ public class Movement : MonoBehaviour
     [ConditionalHide("enableValues")] public float retroThrustRoll = 1;
     [ConditionalHide("enableValues")] public float updateValue = 0.1f;
 
+    [Header ("Shooting")]
+    [ConditionalHideEnum("type", 1)] public Gun gun;
+
     [Space]
     public Transform thrustObject;
     [Space]
@@ -55,7 +59,7 @@ public class Movement : MonoBehaviour
 
     private void Start()
     {
-        target = GameObject.FindGameObjectWithTag("Player").transform;
+        //target = GameObject.FindGameObjectWithTag("Player").transform;
 
         if (type == EType.Player)
         {
@@ -67,13 +71,16 @@ public class Movement : MonoBehaviour
     {
         if (type == EType.AI)
         {
-            if ((transform.position - GameObject.FindGameObjectWithTag("Player").transform.position).sqrMagnitude < rangeDetection * rangeDetection)
+            if (!healer)
             {
-                target = GameObject.FindGameObjectWithTag("Player").transform;
-            }
-            else
-            {
-                target = null;
+                if ((transform.position - GameObject.FindGameObjectWithTag("Player").transform.position).sqrMagnitude < rangeDetection * rangeDetection)
+                {
+                    target = GameObject.FindGameObjectWithTag("Player").transform;
+                }
+                else
+                {
+                    target = null;
+                }
             }
             detectorsSetup();
         }
@@ -147,6 +154,7 @@ public class Movement : MonoBehaviour
             }
             else
             {
+                gun.Shoot();
                 return decelarate();
             }
         }
